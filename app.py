@@ -1,4 +1,5 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, flash, url_for
+from flask.helpers import url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -44,12 +45,48 @@ def show_tasks(project_id):
 
 @app.route("/add/project", methods=["POST"])
 def add_project():
+    project_title = request.form['project-title']
 
-    return "Project Added Successfully!"
+    if not project_title:
+        flash("Enter a title for your new project", "red")
+    else:
+        existing_project = Project.query.filter(Project.title == project_title).first()
+        if existing_project is None:
+            project = Project(title=project_title)
+            db.session.add(project)
+            db.session.commit()
+            flash("Project added successfully!", "green")
+        else:
+            flash("This Project already exists!", "red")
+        
+    return redirect(url_for("show_projects"))
 
 @app.route("/add/task/<project_id>", methods=["POST"])
 def add_task(project_id):
-    return "Task Added Successfully"
+    task_desc = request.form['task-description']
+    if not task_desc:
+        flash("Please enter a description for your task!", "red")
+    else:
+        existing_task = Task.query.join(ProjectTask, 
+        (Task.id == ProjectTask.task_id) & 
+        (ProjectTask.project_id == project_id) &
+        (Task.description == task_desc)).first()
+
+        if existing_task is None:
+            task = Task(description=task_desc)
+            db.session.add(task)
+            db.session.flush()
+            task_id = task.id
+
+            project_task = ProjectTask(project_id=project_id, task_id=task_id)
+            db.session.add(project_task)
+            db.session.commit()
+
+            flash("Task added successfully!", "green")
+        else:
+            flash("Task for this project already exists!", "red")
+
+    return redirect(url_for("show_tasks", project_id=project_id))
 
 
 app.run(debug=True, host="127.0.0.1", port=3000)

@@ -11,7 +11,7 @@
         </ul>
 
         <h3>Add New Task</h3>
-        <form action="/add/task/{{project_id}}" method="POST">
+        <form action="/add/task/{{project.id}}" method="POST">
             <div>
                 Task: <input type="text" name="task-description"></div>
             </div>
@@ -19,5 +19,11 @@
             <br>
             <input type="submit" value="Add Task">
         </form>
+
+        <br>
+
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div style="color: {{ category }}"> {{ message }}</div>
+        {% endfor %}
     </body>
 </html>
