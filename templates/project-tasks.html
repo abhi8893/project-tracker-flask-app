@@ -6,7 +6,7 @@
 
         <ul>
             {% for task in tasks %}
-                <li>{{task.description}}</li>
+                <li>{{task.description}} <a href="/delete/task/{{ task.id }}">Delete</a></li>
             {% endfor %}
         </ul>
 

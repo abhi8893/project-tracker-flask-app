@@ -88,5 +88,46 @@ def add_task(project_id):
 
     return redirect(url_for("show_tasks", project_id=project_id))
 
+@app.route("/delete/task/<task_id>")
+def delete_task(task_id):
+
+    project_task = ProjectTask.query.filter(ProjectTask.task_id == task_id).first()
+    project_id = project_task.project_id
+    db.session.delete(project_task)
+
+    task = Task.query.filter(Task.id == task_id).first()
+    db.session.delete(task)
+    db.session.commit()
+    flash("Task deleted successfully!", "green")
+
+    return redirect(url_for("show_tasks", project_id=project_id))
+
+@app.route("/delete/project/<project_id>")
+def delete_project(project_id):
+
+    project_tasks = ProjectTask.query.filter(ProjectTask.project_id == project_id).all()
+
+    tasks = Task.query.join(ProjectTask,
+        (Task.id == ProjectTask.task_id) &
+        (ProjectTask.project_id == project_id)).all()
+
+    for pt in project_tasks:
+        db.session.delete(pt)
+
+    for t in tasks:
+        db.session.delete(t)
+
+    project = Project.query.filter(Project.id == project_id).first()
+    db.session.delete(project)
+    db.session.commit()
+    flash("Project deleted successfully!", "green")
+
+    return redirect(url_for("show_projects"))
+
+    
+
+    db.session.delete(tasls)
+    project = Project.query.filter(Project.id == project_id).first()
+
 
 app.run(debug=True, host="127.0.0.1", port=3000)
